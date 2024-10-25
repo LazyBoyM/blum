@@ -1,5 +1,6 @@
 import asyncio
 from itertools import product
+import pyautogui
 
 import keyboard
 import mouse
@@ -127,6 +128,22 @@ class BlumClicker:
 
         return False
 
+    @staticmethod
+    def click_on_play_button(screen: Any, rect: Tuple[int, int, int, int]
+    ) -> bool:
+        """
+        Click on the 'Play (nn left)' button.
+        """
+        width, height = screen.size
+        x, y = int(width * 0.3075), int(height * 0.87)   # (123, 609) button position 
+        screen_x = rect[0] + x
+        screen_y = rect[1] + y
+        (r,g,b) = pyautogui.pixel(screen_x, screen_y)
+        if (r,g,b) == (255,255,255): 
+            mouse.move(screen_x, screen_y, absolute=True)
+            mouse.click(button=mouse.LEFT)
+            return True
+
     async def run(self) -> None:
         """
         Runs the clicker.
@@ -140,10 +157,11 @@ class BlumClicker:
             logger.info(get_language("p").format(window=window.title))
             logger.info(get_language("PRESS_S_TO_START"))
 
+            # ft = 0
+            # st = 0
             while True:
                 if await self.handle_input():
                     continue
-
                 rect = self.utils.get_rect(window)
 
                 screenshot = self.utils.capture_screenshot(rect)
@@ -153,6 +171,9 @@ class BlumClicker:
 
                 if get_config_value("COLLECT_DOGS"):
                     self.collect_dog(screenshot, rect)
+
+                self.click_on_play_button(screenshot, rect)
+
 
         except (Exception, ExceptionGroup) as error:
             logger.error(get_language("WINDOW_CLOSED").format(error=error))
