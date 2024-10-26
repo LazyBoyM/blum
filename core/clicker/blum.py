@@ -104,29 +104,23 @@ class BlumClicker:
         :param rect: the bounding rectangle of the screen
         :return: whether the dog was found
         """
-        hsv = cv2.cvtColor(
-            cv2.cvtColor(np.array(screen), cv2.COLOR_RGB2BGR), cv2.COLOR_BGR2HSV
-        )
 
-        lower_white = np.array([0, 0, 200], dtype=np.uint8)
-        upper_white = np.array([180, 55, 255], dtype=np.uint8)
+        width, height = screen.size
+        start_coord_y = int(height * 0.1885) # remove y area from clicks on white pixels
 
-        mask = cv2.inRange(hsv, lower_white, upper_white)
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for x, y in product(range(0, width, 20), range(start_coord_y, height, 20)):
+            r, g, b = screen.getpixel((x, y))
+            white_pixel = (r == 255) and (g == 255) and (b == 255)
 
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            if 500 < area < 3000:
-                x, y, w, h = cv2.boundingRect(contour)
-                screen_x = rect[0] + x + w // 2
-                screen_y = rect[1] + y + h // 2
-
+            if white_pixel:
+                screen_x = rect[0] + x
+                screen_y = rect[1] + y
                 mouse.move(screen_x, screen_y, absolute=True)
                 mouse.click(button=mouse.LEFT)
-
                 return True
 
         return False
+
 
     @staticmethod
     def click_on_play_button(screen: Any, rect: Tuple[int, int, int, int]
