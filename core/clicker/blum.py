@@ -1,4 +1,5 @@
-import asyncio
+import asyncio, time
+import random
 from itertools import product
 import pyautogui
 
@@ -72,6 +73,65 @@ class BlumClicker:
         return False
 
     @staticmethod
+    def collect_pumpkin(screen: Any, rect: Tuple[int, int, int, int]) -> bool:
+        """
+        Click on the found point.
+
+        :param screen: the screenshot
+        :param rect: the rectangle
+        :return: whether the image was found
+        """
+        width, height = screen.size
+        avoid_color = (196, 247, 94)
+
+        for x, y in product(range(0, width, 20), range(0, height, 20)):
+            r, g, b = screen.getpixel((x, y))
+            pamkin_range = (35 < b < 63) and (220 <= r < 233) and (114 <= g < 128)
+
+            if (r, g, b) == avoid_color:
+                continue
+
+            if pamkin_range:
+                screen_x = rect[0] + x
+                screen_y = rect[1] + y
+                mouse.move(screen_x, screen_y, absolute=True)
+                mouse.click(button=mouse.LEFT)
+
+                return True
+
+        return False
+
+
+    @staticmethod
+    def collect_bomb(screen: Any, rect: Tuple[int, int, int, int]) -> bool:
+        """
+        Click on the found point.
+
+        :param screen: the screenshot
+        :param rect: the rectangle
+        :return: whether the image was found
+        """
+        width, height = screen.size
+        avoid_color = (196, 247, 94)
+
+        for x, y in product(range(0, width, 20), range(80, height, 20)):
+            r, g, b = screen.getpixel((x, y))
+            bomb_range = (120 < b < 210) and (134 <= r < 201) and (120 <= g < 210)
+
+            if (r, g, b) == avoid_color:
+                continue
+
+            if bomb_range:
+                screen_x = rect[0] + x
+                screen_y = rect[1] + y
+                mouse.move(screen_x, screen_y, absolute=True)
+                mouse.click(button=mouse.LEFT)
+
+                return True
+
+        return False
+
+    @staticmethod
     def collect_freeze(screen: Any, rect: Tuple[int, int, int, int]) -> bool:
         """
         Click on the found freeze.
@@ -135,6 +195,7 @@ class BlumClicker:
         (r,g,b) = pyautogui.pixel(screen_x, screen_y)
         if (r,g,b) == (255,255,255): 
             mouse.move(screen_x, screen_y, absolute=True)
+            time.sleep(random.random())
             mouse.click(button=mouse.LEFT)
             return True
 
@@ -160,8 +221,10 @@ class BlumClicker:
 
                 screenshot = self.utils.capture_screenshot(rect)
 
-                self.collect_green(screenshot, rect)
-                self.collect_freeze(screenshot, rect)
+                # self.collect_green(screenshot, rect)
+                self.collect_pumpkin(screenshot, rect)
+                self.collect_bomb(screenshot, rect)
+                # self.collect_freeze(screenshot, rect)
 
                 if get_config_value("COLLECT_DOGS"):
                     self.collect_dog(screenshot, rect)
